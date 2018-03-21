@@ -14,7 +14,7 @@ exports.default = {
 		'jweixin': 'window.wx'
 	},
 	//端口
-	port: 3000,
+	port: 2333,
 	//静态资源地址
 	publicPath: '//web.yystatic.com/project/two-way-data-binding/mobile/',
 	//项目输出地址
