@@ -1,6 +1,73 @@
 import './html/index.html';
 import './sass/index.scss';
 
+
+// 主题
+
+class Dep {
+    constructor() {
+        this.subs = [];
+    }
+    addSub(sub) {
+        this.subs.push(sub);
+    }
+    notify() {
+        this.subs.forEach(sub => {
+            sub.update();
+        });
+    }
+}
+// 订阅/发布模式
+
+class Watcher {
+    constructor(vm, node, name) {
+        Dep.target = this;
+        this.name = name;
+        this.node = node;
+        this.vm = vm;
+        this.update();
+        Dep.target = null;
+    }
+    update() {
+        this.get();
+        this.node.nodeValue = this.value;
+    }
+    // 获取data中的属性值
+    get() {
+        // 触发相应属性的get
+        this.value = this.vm[this.name];
+    }
+}
+
+
+
+// 响应式的数据绑定
+
+function observe(obj, vm) {
+    Object.keys(obj).forEach(key => {
+        defineReactive(vm, key, obj[key]);
+    })
+}
+
+function defineReactive(obj, key, val) {
+    const dep = new Dep();
+
+    Object.defineProperty(obj, key, {
+        get() {
+            // 添加订阅者watcher到主题对象Dep
+            if (Dep.target) dep.addSub(Dep.target);
+            return val;
+        },
+        set(newVal) {
+            if (newVal === val) return;
+            val = newVal;
+            // 作为发布者发出通知
+            dep.notify();
+        }
+    });
+}
+
+
 function nodeToFragment(node, vm) {
     var flag = document.createDocumentFragment();
     var child;
@@ -79,74 +146,11 @@ class Vue {
     }
 }
 
-// 订阅/发布模式
-
-class Watcher {
-    constructor(vm, node, name) {
-        Dep.target = this;
-        this.name = name;
-        this.node = node;
-        this.vm = vm;
-        this.update();
-        Dep.target = null;
-    }
-    update() {
-        this.get();
-        this.node.nodeValue = this.value;
-    }
-    // 获取data中的属性值
-    get() {
-        // 触发相应属性的get
-        this.value = this.vm[this.name];
-    }
-}
-
-// 主题
-
-class Dep {
-    constructor() {
-        this.subs = [];
-    }
-    addSub(sub) {
-        this.subs.push(sub);
-    }
-    notify() {
-        this.subs.forEach(sub => {
-            sub.update();
-        });
-    }
-}
 
 var vm = new Vue({
     el: 'app',
     data: {
-        text: 'hello world'
+        text: 'hello world',
+        text2: 'text2'
     }
 });
-
-
-// 响应式的数据绑定
-
-function defineReactive(obj, key, val) {
-    const dep = new Dep();
-
-    Object.defineProperty(obj, key, {
-        get() {
-            // 添加订阅者watcher到主题对象Dep
-            if (Dep.target) dep.addSub(Dep.target);
-            return val;
-        },
-        set(newVal) {
-            if (newVal === val) return;
-            val = newVal;
-            // 作为发布者发出通知
-            dep.notify();
-        }
-    });
-}
-
-function observe(obj, vm) {
-    Object.keys(obj).forEach(key => {
-        defineReactive(vm, key, obj[key]);
-    })
-}
